@@ -373,7 +373,7 @@ It also can add a delay to wait for spindle to run on full speed.
 #define DELTA_DIAGONAL_CORRECTION_C 0
 #define END_EFFECTOR_HORIZONTAL_OFFSET 0
 #define CARRIAGE_HORIZONTAL_OFFSET 0
-#define DELTA_MAX_RADIUS 75
+#define DELTA_MAX_RADIUS 100
 #define ROD_RADIUS 94
 #define PRINTER_RADIUS 94
 #define DELTA_HOME_ON_POWER 0
@@ -489,25 +489,25 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define Z_PROBE_PIN ORIG_Z_MIN_PIN
 #define Z_PROBE_PULLUP 1
 #define Z_PROBE_ON_HIGH 0
-#define Z_PROBE_X_OFFSET -19
-#define Z_PROBE_Y_OFFSET -11
+#define Z_PROBE_X_OFFSET -30
+#define Z_PROBE_Y_OFFSET -21
 #define Z_PROBE_WAIT_BEFORE_TEST 0
 #define Z_PROBE_SPEED 10
-#define Z_PROBE_XY_SPEED 60
-#define Z_PROBE_SWITCHING_DISTANCE 4
+#define Z_PROBE_XY_SPEED 80
+#define Z_PROBE_SWITCHING_DISTANCE 2
 #define Z_PROBE_REPETITIONS 3
-#define Z_PROBE_HEIGHT 1.3
+#define Z_PROBE_HEIGHT 2
 #define Z_PROBE_START_SCRIPT ""
 #define Z_PROBE_FINISHED_SCRIPT ""
 #define Z_PROBE_REQUIRES_HEATING 0
 #define Z_PROBE_MIN_TEMPERATURE 150
 #define FEATURE_AUTOLEVEL 1
-#define Z_PROBE_X1 -32
-#define Z_PROBE_Y1 -32
-#define Z_PROBE_X2 32
-#define Z_PROBE_Y2 -32
-#define Z_PROBE_X3 -32
-#define Z_PROBE_Y3 32
+#define Z_PROBE_X1 -36
+#define Z_PROBE_Y1 -36
+#define Z_PROBE_X2 36
+#define Z_PROBE_Y2 -36
+#define Z_PROBE_X3 -36
+#define Z_PROBE_Y3 36
 #define BED_LEVELING_METHOD 1
 #define BED_CORRECTION_METHOD 0
 #define BED_LEVELING_GRID_SIZE 4
@@ -799,7 +799,7 @@ Values must be in range 1..255
     "deltaDiagonalCorrA": 0,
     "deltaDiagonalCorrB": 0,
     "deltaDiagonalCorrC": 0,
-    "deltaMaxRadius": 75,
+    "deltaMaxRadius": 100,
     "deltaFloorSafetyMarginMM": 25,
     "deltaRadiusCorrA": 0,
     "deltaRadiusCorrB": 0,
@@ -974,22 +974,22 @@ Values must be in range 1..255
     "zProbeBedDistance": 20,
     "zProbePullup": "1",
     "zProbeOnHigh": "0",
-    "zProbeXOffset": -19,
-    "zProbeYOffset": -11,
+    "zProbeXOffset": -30,
+    "zProbeYOffset": -21,
     "zProbeWaitBeforeTest": "0",
     "zProbeSpeed": 10,
-    "zProbeXYSpeed": 60,
-    "zProbeHeight": 1.3,
+    "zProbeXYSpeed": 80,
+    "zProbeHeight": 2,
     "zProbeStartScript": "",
     "zProbeFinishedScript": "",
     "featureAutolevel": "1",
-    "zProbeX1": -32,
-    "zProbeY1": -32,
-    "zProbeX2": 32,
-    "zProbeY2": -32,
-    "zProbeX3": -32,
-    "zProbeY3": 32,
-    "zProbeSwitchingDistance": 4,
+    "zProbeX1": -36,
+    "zProbeY1": -36,
+    "zProbeX2": 36,
+    "zProbeY2": -36,
+    "zProbeX3": -36,
+    "zProbeY3": 36,
+    "zProbeSwitchingDistance": 2,
     "zProbeRepetitions": 3,
     "sdSupport": "1",
     "sdCardDetectPin": "ORIG_SDCARDDETECT",
