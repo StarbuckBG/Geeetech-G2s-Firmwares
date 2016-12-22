@@ -44,6 +44,8 @@ volatile uint8_t GCode::bufferLength = 0; ///< Number of commands stored in gcod
 millis_t GCode::timeOfLastDataPacket = 0; ///< Time, when we got the last data packet. Used to detect missing uint8_ts.
 uint8_t  GCode::formatErrors = 0;
 PGM_P GCode::fatalErrorMsg = NULL; ///< message unset = no fatal error 
+millis_t GCode::lastBusySignal = 0; ///< When was the last busy signal
+uint32_t GCode::keepAliveInterval = KEEP_ALIVE_INTERVAL;
 
 /** \page Repetier-protocol
 
@@ -150,6 +152,25 @@ uint8_t GCode::computeBinarySize(char *ptr)  // unsigned int bitfield) {
     return s;
 }
 
+void GCode::keepAlive(enum FirmwareState state) {
+	millis_t now = HAL::timeInMilliseconds();
+	
+	if(state != NotBusy && keepAliveInterval != 0) {
+		if(now - lastBusySignal < keepAliveInterval)
+			return;
+		if(state == Paused) {
+			Com::printFLN(PSTR("busy:paused for user interaction"));	
+		} else if(state == WaitHeater) {
+			Com::printFLN(PSTR("busy:heating"));	
+		} else if(state == DoorOpen) {
+			Com::printFLN(PSTR("busy:door open"));
+		} else { // processing and uncaught cases
+			Com::printFLN(PSTR("busy:processing"));
+		}
+	}
+	lastBusySignal = now;
+}
+
 void GCode::requestResend()
 {
     HAL::serialFlush();
@@ -222,14 +243,16 @@ void GCode::checkAndPushCommand()
             return;
         }
         lastLineNumber = actLineNumber;
-    } else if(lastLineNumber && !(hasM() && M == 117)) { // once line number always line number!
+    } /*
+	This test is not compatible with all hosts. Replaced by forbidding backward switch of protocols.
+	else if(lastLineNumber && !(hasM() && M == 117)) { // once line number always line number!
 		if(Printer::debugErrors())
         {
 			Com::printErrorFLN(PSTR("Missing linenumber"));
 		}
 		requestResend();
 		return;
-	}
+	}*/
 	if(GCode::hasFatalError() && !(hasM() && M==999)) {
 		GCode::reportFatalError();
 	} else {
@@ -245,6 +268,7 @@ void GCode::checkAndPushCommand()
     Com::printFLN(Com::tOk);
 #endif
     wasLastCommandReceivedAsBinary = sendAsBinary;
+	keepAlive(NotBusy);
     waitingForResend = -1; // everything is ok.
 }
 
@@ -323,8 +347,10 @@ void GCode::executeFString(FSTRINGPARAM(cmd))
             buf[buflen++] = c;
         }
         while(buflen < 79);
-        if(buflen == 0)   // empty line ignore
+        if(buflen == 0) {  // empty line ignore
+			if(!c) return; // Special case \n0
             continue;
+		}
         buf[buflen] = 0;
         // Send command into command buffer
         if(code.parseAscii((char *)buf,false) && (code.params & 518))   // Success
@@ -347,8 +373,16 @@ It must be called frequently to empty the incoming buffer.
 */
 void GCode::readFromSerial()
 {
-    if(bufferLength >= GCODE_BUFFER_SIZE) return; // all buffers full
-    if(waitUntilAllCommandsAreParsed && bufferLength) return;
+#if defined(DOOR_PIN) && DOOR_PIN > -1
+	if(READ(DOOR_PIN) != DOOR_INVERTING) {
+		keepAlive(DoorOpen);
+		return; // do nothing while door is open
+	}
+#endif	
+    if(bufferLength >= GCODE_BUFFER_SIZE || (waitUntilAllCommandsAreParsed && bufferLength)) {
+		keepAlive(Processing);
+		return; // all buffers full
+	}
     waitUntilAllCommandsAreParsed = false;
     millis_t time = HAL::timeInMilliseconds();
     if(!HAL::serialByteAvailable())
@@ -406,13 +440,15 @@ void GCode::readFromSerial()
                 return;
             }
         }
-        else     // Ascii command
+        else     // ASCII command
         {
             char ch = commandReceiving[commandsReceivingWritePosition - 1];
-            if(ch == 0 || ch == '\n' || ch == '\r' || (!commentDetected && ch == ':'))  // complete line read
+            if(ch == 0 || ch == '\n' || ch == '\r' /*|| (!commentDetected && ch == ':')*/)  // complete line read
             {
                 commandReceiving[commandsReceivingWritePosition - 1] = 0;
-                //Com::printF(PSTR("Parse ascii:"));Com::print((char*)commandReceiving);Com::println();
+#ifdef DEBUG_ECHO_ASCII				
+                Com::printF(PSTR("Got:"));Com::print((char*)commandReceiving);Com::println();
+#endif				
                 commentDetected = false;
                 if(commandsReceivingWritePosition == 1)   // empty line ignore
                 {
@@ -707,7 +743,7 @@ bool GCode::parseBinary(uint8_t *buffer,bool fromSerial)
 }
 
 /**
-  Converts a ascii GCode line into a GCode structure.
+  Converts a ASCII GCode line into a GCode structure.
 */
 bool GCode::parseAscii(char *line,bool fromSerial)
 {
@@ -715,6 +751,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
     params = 0;
     params2 = 0;
     internalCommand = !fromSerial;
+	bool hasChecksum = false;
     char c;
     while ( (c = *(pos++)) )
     {
@@ -744,7 +781,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
             params |= 2;
             if(M > 255) params |= 4096;
             // handle non standard text arguments that some M codes have
-            if (M == 20 || M == 23 || M == 28 || M == 29 || M == 30 || M == 32 || M == 36 || M == 117)
+            if (M == 20 || M == 23 || M == 28 || M == 29 || M == 30 || M == 32 || M == 36 || M == 117 || M == 531)
             {
                 // after M command we got a filename or text
                 char digit;
@@ -757,15 +794,15 @@ bool GCode::parseAscii(char *line,bool fromSerial)
                 {
                     if (digit != ' ') break;
                     pos++;
-                    // skip leading whitespaces (may be no white space)
+                    // skip leading white spaces (may be no white space)
                 }
                 text = pos;
                 while (*pos)
                 {
-                    if((M != 117 && M != 20 && *pos==' ') || *pos=='*') break;
+                    if((M != 117 && M != 20 && M != 531 && *pos==' ') || *pos=='*') break;
                     pos++; // find a space as file name end
                 }
-                *pos = 0; // truncate filename by erasing space with nul, also skips checksum
+                *pos = 0; // truncate filename by erasing space with null, also skips checksum
                 waitUntilAllCommandsAreParsed = true; // don't risk string be deleted
                 params |= 32768;
             }
@@ -862,7 +899,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'C':
         case 'c':
         {
-	        D = parseFloatValue(pos);
+	        C = parseFloatValue(pos);
 	        params2 |= 16;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -870,7 +907,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'H':
         case 'h':
         {
-	        D = parseFloatValue(pos);
+	        H = parseFloatValue(pos);
 	        params2 |= 32;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -878,7 +915,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'A':
         case 'a':
         {
-	        D = parseFloatValue(pos);
+	        A = parseFloatValue(pos);
 	        params2 |= 64;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -886,7 +923,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'B':
         case 'b':
         {
-	        D = parseFloatValue(pos);
+	        B = parseFloatValue(pos);
 	        params2 |= 128;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -894,7 +931,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'K':
         case 'k':
         {
-	        D = parseFloatValue(pos);
+	        K = parseFloatValue(pos);
 	        params2 |= 256;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -902,7 +939,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'L':
         case 'l':
         {
-	        D = parseFloatValue(pos);
+	        L = parseFloatValue(pos);
 	        params2 |= 512;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -910,7 +947,7 @@ bool GCode::parseAscii(char *line,bool fromSerial)
         case 'O':
         case 'o':
         {
-	        D = parseFloatValue(pos);
+	        O = parseFloatValue(pos);
 	        params2 |= 1024;
 	        params |= 4096; // Needs V2 for saving
 	        break;
@@ -931,14 +968,18 @@ bool GCode::parseAscii(char *line,bool fromSerial)
                 }
                 return false; // mismatch
             }
+			hasChecksum = true;
             break;
         }
         default:
             break;
         }// end switch
     }// end while
-
-    if(hasFormatError() || (params & 518) == 0)   // Must contain G, M or T command and parameter need to have variables!
+	if(wasLastCommandReceivedAsBinary && !hasChecksum && fromSerial && !waitUntilAllCommandsAreParsed) {
+		Com::printErrorFLN("Checksum required when switching back to ASCII protocol.");
+		return false;
+	}
+    if(hasFormatError() /*|| (params & 518) == 0*/)   // Must contain G, M or T command and parameter need to have variables!
     {
         formatErrors++;
         if(Printer::debugErrors())
@@ -1030,11 +1071,11 @@ void GCode::fatalError(FSTRINGPARAM(message)) {
 	}
 #endif	
 	if(Printer::currentPosition[Z_AXIS] < Printer::zMin + Printer::zLength - 15)
-		PrintLine::moveRelativeDistanceInStepsReal(0,0,10*Printer::axisStepsPerMM[Z_AXIS],0,Printer::homingFeedrate[Z_AXIS],true,true);
+		PrintLine::moveRelativeDistanceInSteps(0, 0, 10 * Printer::axisStepsPerMM[Z_AXIS], 0, Printer::homingFeedrate[Z_AXIS], true, true);
 	EVENT_FATAL_ERROR_OCCURED		
 	Commands::waitUntilEndOfAllMoves();
-	Printer::kill(true);		
 	reportFatalError();
+	Printer::kill(false);
 }
 
 void GCode::reportFatalError() {
@@ -1046,6 +1087,7 @@ void GCode::reportFatalError() {
 
 void GCode::resetFatalError() {
 	TemperatureController::resetAllErrorStates();
+	Printer::debugReset(8); // disable dry run
 	fatalErrorMsg = NULL;
 	UI_ERROR("");
 	EVENT_CONTINUE_FROM_FATAL_ERROR
@@ -1241,3 +1283,125 @@ bool GCodeFileInfo::findTotalHeight(char *buf, float &height) {
     return false;
 }
 #endif // JSON_OUTPUT
+
+fast8_t GCodeSource::numSources = 0; ///< Number of data sources available
+fast8_t GCodeSource::numWriteSources = 0;
+GCodeSource *GCodeSource::sources[MAX_DATA_SOURCES];    
+GCodeSource *GCodeSource::writeableSources[MAX_DATA_SOURCES];
+GCodeSource *GCodeSource::activeSource = NULL;
+
+void GCodeSource::registerSource(GCodeSource *newSource) {
+  sources[numSources++] = newSource;
+  if(newSource->supportsWrite())
+     writeableSources[numWriteSources++] = newSource;  
+}
+
+void GCodeSource::removeSource(GCodeSource *delSource) {
+  fast8_t i;
+  for(i = 0; i < numSources; i++) {
+      if(sources[i] == delSource) {
+          sources[i] = sources[--numSources];
+          break;
+      }
+  }  
+  for(i = 0; i < numWriteSources; i++) {
+      if(writeableSources[i] == delSource) {
+          writeableSources[i] = writeableSources[--numWriteSources];
+          break;
+      }
+  }
+  if(activeSource == delSource)
+    rotateSource();
+}
+
+void GCodeSource::rotateSource() { ///< Move active to next source
+    fast8_t bestIdx = 0;
+    fast8_t i;
+    for(i = 0; i < numSources; i++) {
+        if(sources[i] == activeSource) {
+           bestIdx = (i+1) & numSources;
+           break;
+       }
+    }    
+    activeSource = sources[bestIdx];
+}   
+ 
+void GCodeSource::writeToAll(uint8_t byte) { ///< Write to all listening sources 
+    fast8_t i;
+    for(i = 0; i < numWriteSources; i++) {
+       writeableSources[i]->writeByte(byte);
+   }   
+}
+
+GCodeSource::GCodeSource() {
+    lastLineNumber = 0;
+    wasLastCommandReceivedAsBinary = false;
+}
+
+bool SerialGCodeSource::isOpen() {
+    return true;    
+}
+bool SerialGCodeSource::supportsWrite() { ///< true if write is a non dummy function
+    return true;
+}    
+bool SerialGCodeSource::closeOnError() { // return true if the channel can not interactively correct errors.
+    return false;
+}    
+bool SerialGCodeSource::dataAvailable() { // would read return a new byte?
+    return false;
+}    
+int SerialGCodeSource::readByte() {
+    return -1;
+}
+void SerialGCodeSource::writeByte(uint8_t byte) {
+    
+}
+
+bool SDCardGCodeSource::isOpen() {
+    return false; // (sd.sdmode > 0 && sd.sdmode < 100);
+}
+bool SDCardGCodeSource::supportsWrite() { ///< true if write is a non dummy function
+    return false;
+}
+bool SDCardGCodeSource::closeOnError() { // return true if the channel can not interactively correct errors.
+    return true;
+}
+bool SDCardGCodeSource::dataAvailable() { // would read return a new byte?
+    return false;
+}
+int SDCardGCodeSource::readByte() {
+    return -1; //sd.file.read();
+}
+void SDCardGCodeSource::writeByte(uint8_t byte) {
+    // dummy
+}
+
+
+FlashGCodeSource::FlashGCodeSource():GCodeSource() {
+    finished = true;    
+}
+bool FlashGCodeSource::isOpen() {
+    return !finished;
+}
+bool FlashGCodeSource::supportsWrite() { ///< true if write is a non dummy function
+    return false;
+}
+bool FlashGCodeSource::closeOnError() { // return true if the channel can not interactively correct errors.
+    return true;
+}
+bool FlashGCodeSource::dataAvailable() { // would read return a new byte?
+    return !finished;
+}
+int FlashGCodeSource::readByte() {
+    return -1;
+}
+void FlashGCodeSource::writeByte(uint8_t byte) {
+    // dummy
+}
+    
+/** Execute the commands at the given memory. If already an other string is
+running, the command will wait until that command finishes. If wait is true it
+will also wait for given command to be enqueued completely. */
+void FlashGCodeSource::executeCommands(FSTRINGPARAM(data),bool waitFinish) {
+        
+}

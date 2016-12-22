@@ -48,6 +48,7 @@
 #undef FAN_BOARD_PIN
 #define FAN_BOARD_PIN -1
 #define BOARD_FAN_SPEED 255
+#define BOARD_FAN_MIN_SPEED 0
 #define FAN_THERMO_PIN -1
 #define FAN_THERMO_MIN_PWM 128
 #define FAN_THERMO_MAX_PWM 255
@@ -71,7 +72,7 @@
 #define EXTRUDER_FAN_COOL_TEMP 50
 #define PDM_FOR_EXTRUDER 0
 #define PDM_FOR_COOLER 0
-#define DECOUPLING_TEST_MAX_HOLD_VARIANCE 20
+#define DECOUPLING_TEST_MAX_HOLD_VARIANCE 30
 #define DECOUPLING_TEST_MIN_TEMP_RISE 0.5
 #define KILL_IF_SENSOR_DEFECT 0
 #define RETRACT_ON_PAUSE 4
@@ -174,12 +175,13 @@
 #define FILAMENTCHANGE_REHOME 2
 #define FILAMENTCHANGE_SHORTRETRACT 5
 #define FILAMENTCHANGE_LONGRETRACT 50
+#define JAM_METHOD 1
 #define JAM_STEPS 220
 #define JAM_SLOWDOWN_STEPS 320
 #define JAM_SLOWDOWN_TO 70
 #define JAM_ERROR_STEPS 500
 #define JAM_MIN_STEPS 10
-#define JAM_ACTION 1
+#define JAM_ACTION 0
 
 #define RETRACT_DURING_HEATUP true
 #define PID_CONTROL_RANGE 20
@@ -226,6 +228,7 @@
 #define MAXTEMP 245
 #define MIN_DEFECT_TEMPERATURE -10
 #define MAX_DEFECT_TEMPERATURE 290
+#define MILLISECONDS_PREHEAT_TIME 30000
 
 // ##########################################################################################
 // ##                             Laser configuration                                      ##
@@ -236,7 +239,7 @@ If the firmware is in laser mode, it can control a laser output to cut or engrav
 Please use this feature only if you know about safety and required protection. Lasers are
 dangerous and can hurt or make you blind!!!
 
-The default laser driver only supports laser on and off. Here you control the eíntensity with
+The default laser driver only supports laser on and off. Here you control the intensity with
 your feedrate. For exchangeable diode lasers this is normally enough. If you need more control
 you can set the intensity in a range 0-255 with a custom extension to the driver. See driver.h
 and comments on how to extend the functions non invasive with our event system.
@@ -278,6 +281,7 @@ It also can add a delay to wait for spindle to run on full speed.
 
 // ################ Endstop configuration #####################
 
+#define MULTI_ZENDSTOP_HOMING 0
 #define ENDSTOP_PULLUP_X_MIN true
 #define ENDSTOP_X_MIN_INVERTING false
 #define MIN_HARDWARE_ENDSTOP_X false
@@ -287,6 +291,9 @@ It also can add a delay to wait for spindle to run on full speed.
 #define ENDSTOP_PULLUP_Z_MIN true
 #define ENDSTOP_Z_MIN_INVERTING false
 #define MIN_HARDWARE_ENDSTOP_Z false
+#define ENDSTOP_PULLUP_Z2_MINMAX true
+#define ENDSTOP_Z2_MINMAX_INVERTING false
+#define MINMAX_HARDWARE_ENDSTOP_Z2 false
 #define ENDSTOP_PULLUP_X_MAX true
 #define ENDSTOP_X_MAX_INVERTING false
 #define MAX_HARDWARE_ENDSTOP_X true
@@ -304,6 +311,9 @@ It also can add a delay to wait for spindle to run on full speed.
 #define max_software_endstop_x false
 #define max_software_endstop_y false
 #define max_software_endstop_z false
+#define DOOR_PIN -1
+#define DOOR_PULLUP 1
+#define DOOR_INVERTING 1
 #define ENDSTOP_X_BACK_MOVE 10
 #define ENDSTOP_Y_BACK_MOVE 10
 #define ENDSTOP_Z_BACK_MOVE 10
@@ -314,6 +324,9 @@ It also can add a delay to wait for spindle to run on full speed.
 #define ENDSTOP_Y_BACK_ON_HOME 10
 #define ENDSTOP_Z_BACK_ON_HOME 10
 #define ALWAYS_CHECK_ENDSTOPS 0
+#define MOVE_X_WHEN_HOMED 0
+#define MOVE_Y_WHEN_HOMED 0
+#define MOVE_Z_WHEN_HOMED 0
 
 // ################# XYZ movements ###################
 
@@ -336,6 +349,8 @@ It also can add a delay to wait for spindle to run on full speed.
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
+#define Z2_MINMAX_PIN -1
+
 #define DISTORTION_CORRECTION 1
 #define DISTORTION_CORRECTION_POINTS 5
 #define DISTORTION_CORRECTION_R 55
@@ -374,8 +389,8 @@ It also can add a delay to wait for spindle to run on full speed.
 #define END_EFFECTOR_HORIZONTAL_OFFSET 0
 #define CARRIAGE_HORIZONTAL_OFFSET 0
 #define DELTA_MAX_RADIUS 100
-#define ROD_RADIUS 94
-#define PRINTER_RADIUS 94
+#define ROD_RADIUS 101
+#define PRINTER_RADIUS 101
 #define DELTA_HOME_ON_POWER 0
 #define STEP_COUNTER
 #define DELTA_X_ENDSTOP_OFFSET_STEPS 0
@@ -440,6 +455,10 @@ It also can add a delay to wait for spindle to run on full speed.
 #define Z3_STEP_PIN   ORIG_E2_STEP_PIN
 #define Z3_DIR_PIN    ORIG_E2_DIR_PIN
 #define Z3_ENABLE_PIN ORIG_E2_ENABLE_PIN
+#define FEATURE_FOUR_ZSTEPPER 0
+#define Z4_STEP_PIN   ORIG_E3_STEP_PIN
+#define Z4_DIR_PIN    ORIG_E3_DIR_PIN
+#define Z4_ENABLE_PIN ORIG_E3_ENABLE_PIN
 #define FEATURE_DITTO_PRINTING 0
 #define USE_ADVANCE 0
 #define ENABLE_QUADRATIC_ADVANCE 0
@@ -452,6 +471,7 @@ It also can add a delay to wait for spindle to run on full speed.
 #define POWER_INVERTING 0
 #define KILL_METHOD 1
 #define ACK_WITH_LINENUMBER 1
+#define KEEP_ALIVE_INTERVAL 2000
 #define WAITING_IDENTIFIER "wait"
 #define ECHO_ON_EXECUTE 1
 #define EEPROM_MODE 0
@@ -485,6 +505,7 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define Z_PROBE_Z_OFFSET_MODE 1
 #define UI_BED_COATING 1
 #define FEATURE_Z_PROBE 1
+#define EXTRUDER_IS_Z_PROBE 0
 #define Z_PROBE_BED_DISTANCE 20
 #define Z_PROBE_PIN ORIG_Z_MIN_PIN
 #define Z_PROBE_PULLUP 1
@@ -502,12 +523,12 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define Z_PROBE_REQUIRES_HEATING 0
 #define Z_PROBE_MIN_TEMPERATURE 150
 #define FEATURE_AUTOLEVEL 1
-#define Z_PROBE_X1 -36
-#define Z_PROBE_Y1 -36
-#define Z_PROBE_X2 36
-#define Z_PROBE_Y2 -36
-#define Z_PROBE_X3 -36
-#define Z_PROBE_Y3 36
+#define Z_PROBE_X1 -30
+#define Z_PROBE_Y1 -30
+#define Z_PROBE_X2 30
+#define Z_PROBE_Y2 -30
+#define Z_PROBE_X3 -30
+#define Z_PROBE_Y3 30
 #define BED_LEVELING_METHOD 1
 #define BED_CORRECTION_METHOD 0
 #define BED_LEVELING_GRID_SIZE 4
@@ -557,7 +578,6 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define UI_PRINTER_NAME "Delta G2S pro"
 #define UI_PRINTER_COMPANY "Geeetech"
 #define UI_PAGES_DURATION 4000
-#define UI_ANIMATION 0
 #define UI_SPEEDDEPENDENT_POSITIONING 0
 #define UI_DISABLE_AUTO_PAGESWITCH 1
 #define UI_AUTORETURN_TO_MENU_AFTER 30000
@@ -792,7 +812,7 @@ Values must be in range 1..255
     "deltaSegmentsPerSecondPrint": 180,
     "deltaSegmentsPerSecondTravel": 70,
     "deltaDiagonalRod": 198,
-    "deltaHorizontalRadius": 94,
+    "deltaHorizontalRadius": 101,
     "deltaAlphaA": 210,
     "deltaAlphaB": 330,
     "deltaAlphaC": 90,
@@ -854,6 +874,13 @@ Values must be in range 1..255
         "dir": "ORIG_E2_DIR_PIN",
         "enable": "ORIG_E2_ENABLE_PIN"
     },
+    "mirrorZ4": "0",
+    "mirrorZ4Motor": {
+        "name": "Extruder 3",
+        "step": "ORIG_E3_STEP_PIN",
+        "dir": "ORIG_E3_DIR_PIN",
+        "enable": "ORIG_E3_ENABLE_PIN"
+    },
     "dittoPrinting": "0",
     "featureServos": "0",
     "servo0Pin": 11,
@@ -869,7 +896,7 @@ Values must be in range 1..255
     "uiPrinterName": "Delta G2S pro",
     "uiPrinterCompany": "Geeetech",
     "uiPagesDuration": 4000,
-    "uiAnimation": "0",
+    "uiHeadline": "",
     "uiDisablePageswitch": "1",
     "uiAutoReturnAfter": 30000,
     "featureKeys": "0",
@@ -983,12 +1010,12 @@ Values must be in range 1..255
     "zProbeStartScript": "",
     "zProbeFinishedScript": "",
     "featureAutolevel": "1",
-    "zProbeX1": -36,
-    "zProbeY1": -36,
-    "zProbeX2": 36,
-    "zProbeY2": -36,
-    "zProbeX3": -36,
-    "zProbeY3": 36,
+    "zProbeX1": -30,
+    "zProbeY1": -30,
+    "zProbeX2": 30,
+    "zProbeY2": -30,
+    "zProbeX3": -30,
+    "zProbeY3": 30,
     "zProbeSwitchingDistance": 2,
     "zProbeRepetitions": 3,
     "sdSupport": "1",
@@ -1016,7 +1043,7 @@ Values must be in range 1..255
     "pdmForCooler": "0",
     "psOn": "ORIG_PS_ON_PIN",
     "mixingExtruder": "0",
-    "decouplingTestMaxHoldVariance": 20,
+    "decouplingTestMaxHoldVariance": 30,
     "decouplingTestMinTempRise": 0.5,
     "featureAxisComp": "1",
     "axisCompTanXY": 0,
@@ -1067,7 +1094,8 @@ Values must be in range 1..255
     "jamSlowdownTo": 70,
     "jamErrorSteps": 500,
     "jamMinSteps": 10,
-    "jamAction": 1,
+    "jamAction": 0,
+    "jamMethod": 1,
     "primaryPort": 0,
     "numMotorDrivers": 0,
     "motorDrivers": [
@@ -1195,6 +1223,19 @@ Values must be in range 1..255
     "extruderSwitchXYSpeed": 100,
     "dualXAxis": "0",
     "boardFanSpeed": 255,
+    "keepAliveInterval": 2000,
+    "moveXWhenHomed": "0",
+    "moveYWhenHomed": "0",
+    "moveZWhenHomed": "0",
+    "preheatTime": 30000,
+    "multiZEndstopHoming": "0",
+    "z2MinMaxPin": -1,
+    "z2MinMaxEndstop": 0,
+    "extruderIsZProbe": "0",
+    "boardFanMinSpeed": 0,
+    "doorPin": -1,
+    "doorEndstop": 1,
+    "uiAnimation": "0",
     "maxHalfstepInterval": 1999,
     "hasMAX6675": false,
     "hasMAX31855": false,
@@ -1205,7 +1246,7 @@ Values must be in range 1..255
     "hasUser1": false,
     "hasUser2": false,
     "numExtruder": 2,
-    "version": 92.9,
+    "version": 100,
     "primaryPortName": ""
 }
 ========== End configuration string ==========

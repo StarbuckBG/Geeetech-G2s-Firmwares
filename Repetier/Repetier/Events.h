@@ -4,7 +4,7 @@
 /*
 Event system in a nutshell:
 
-All printers are different and my need additions in th eone or other place.
+All printers are different and my need additions in the one or other place.
 It is not very convenient to add these code parts across the firmware. For this
 reason repetier-firmware uses a simple event system that comes at no cost if
 a event is not used.
@@ -17,7 +17,7 @@ How to use the system:
 1. In Configuration.h add
 #define CUSTOM_EVENTS
 2. Add a file "CustomEvents.h" which overrides all event macros you need.
-   It shoudl also include the function declarations used.
+   It should also include the function declarations used.
 3. Add a file "CustomEventsImpl.h" which includes all function definitions.
    Also it is named .h it will be included inside a cpp file only once.
    This is to compile only when selected and still keep ArduinoIDE happy.
@@ -78,6 +78,9 @@ Each of the following events describe the parameter and when it is called.
 // #define EVENT_UNHANDLED_G_CODE(c) eventUnhandledGCode(c)
 #define EVENT_UNHANDLED_G_CODE(c) false
 #define EVENT_UNHANDLED_M_CODE(c) false
+
+// Called when bed temperature is set
+#define EVENT_SET_BED_TEMP(temp,boop)
 
 // This gets called every time the user has saved a value to eeprom
 // or any other reason why dependent values may need recomputation.
