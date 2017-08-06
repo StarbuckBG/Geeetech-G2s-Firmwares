@@ -389,8 +389,8 @@ It also can add a delay to wait for spindle to run on full speed.
 #define END_EFFECTOR_HORIZONTAL_OFFSET 0
 #define CARRIAGE_HORIZONTAL_OFFSET 0
 #define DELTA_MAX_RADIUS 100
-#define ROD_RADIUS 101
-#define PRINTER_RADIUS 101
+#define ROD_RADIUS 91
+#define PRINTER_RADIUS 91
 #define DELTA_HOME_ON_POWER 0
 #define STEP_COUNTER
 #define DELTA_X_ENDSTOP_OFFSET_STEPS 0
@@ -474,7 +474,7 @@ It also can add a delay to wait for spindle to run on full speed.
 #define KEEP_ALIVE_INTERVAL 2000
 #define WAITING_IDENTIFIER "wait"
 #define ECHO_ON_EXECUTE 1
-#define EEPROM_MODE 0
+#define EEPROM_MODE 1
 #undef PS_ON_PIN
 #define PS_ON_PIN ORIG_PS_ON_PIN
 #define JSON_OUTPUT 0
@@ -510,28 +510,28 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define Z_PROBE_PIN ORIG_Z_MIN_PIN
 #define Z_PROBE_PULLUP 1
 #define Z_PROBE_ON_HIGH 0
-#define Z_PROBE_X_OFFSET -30
+#define Z_PROBE_X_OFFSET -34
 #define Z_PROBE_Y_OFFSET -21
 #define Z_PROBE_WAIT_BEFORE_TEST 0
 #define Z_PROBE_SPEED 10
 #define Z_PROBE_XY_SPEED 80
 #define Z_PROBE_SWITCHING_DISTANCE 2
-#define Z_PROBE_REPETITIONS 3
+#define Z_PROBE_REPETITIONS 1
 #define Z_PROBE_HEIGHT 2
 #define Z_PROBE_START_SCRIPT ""
 #define Z_PROBE_FINISHED_SCRIPT ""
 #define Z_PROBE_REQUIRES_HEATING 0
 #define Z_PROBE_MIN_TEMPERATURE 150
 #define FEATURE_AUTOLEVEL 1
-#define Z_PROBE_X1 -30
-#define Z_PROBE_Y1 -30
-#define Z_PROBE_X2 30
-#define Z_PROBE_Y2 -30
-#define Z_PROBE_X3 -30
-#define Z_PROBE_Y3 30
+#define Z_PROBE_X1 -24
+#define Z_PROBE_Y1 -24
+#define Z_PROBE_X2 24
+#define Z_PROBE_Y2 -24
+#define Z_PROBE_X3 -24
+#define Z_PROBE_Y3 24
 #define BED_LEVELING_METHOD 1
 #define BED_CORRECTION_METHOD 0
-#define BED_LEVELING_GRID_SIZE 4
+#define BED_LEVELING_GRID_SIZE 3
 #define BED_LEVELING_REPETITIONS 5
 #define BED_MOTOR_1_X 0
 #define BED_MOTOR_1_Y 0
@@ -588,7 +588,7 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define UI_KEY_FIRST_REPEAT 500
 #define UI_KEY_REDUCE_REPEAT 50
 #define UI_KEY_MIN_REPEAT 50
-#define FEATURE_BEEPER 1
+#define FEATURE_BEEPER 0
 #define CASE_LIGHTS_PIN -1
 #define CASE_LIGHT_DEFAULT_ON 1
 #define UI_START_SCREEN_DELAY 1000
@@ -633,7 +633,7 @@ Values must be in range 1..255
     "zStepsPerMM": 80,
     "xInvert": "1",
     "xInvertEnable": 0,
-    "eepromMode": 0,
+    "eepromMode": 1,
     "yInvert": "1",
     "yInvertEnable": 0,
     "zInvert": "1",
@@ -812,7 +812,7 @@ Values must be in range 1..255
     "deltaSegmentsPerSecondPrint": 180,
     "deltaSegmentsPerSecondTravel": 70,
     "deltaDiagonalRod": 198,
-    "deltaHorizontalRadius": 101,
+    "deltaHorizontalRadius": 94,
     "deltaAlphaA": 210,
     "deltaAlphaB": 330,
     "deltaAlphaC": 90,

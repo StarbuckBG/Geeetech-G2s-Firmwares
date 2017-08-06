@@ -40,7 +40,7 @@ Here are some standard links for getting your machine calibrated:
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION "1.0.3 dev"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
-#define STRING_CONFIG_H_AUTHOR "(Martin K.)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(Hogan, Delta)" // Who made the changes.
 #define STRING_SPLASH_LINE1 "v" STRING_VERSION // will be shown during bootup in line 1
 //#define STRING_SPLASH_LINE2 STRING_VERSION_CONFIG_H // will be shown during bootup in line2
 
@@ -96,22 +96,23 @@ Here are some standard links for getting your machine calibrated:
 // NOTE NB all values for DELTA_* values MUST be floating point, so always have a decimal point in them
 
 // Center-to-center distance of the holes in the diagonal push rods.
-#define DELTA_DIAGONAL_ROD 196.0 // mm 196
+// http://www.thingiverse.com/thing:745523
+#define DELTA_DIAGONAL_ROD 198 // mm  ALEX_G (196)
 
 // Horizontal offset from middle of printer to smooth rod center.
-#define DELTA_SMOOTH_ROD_OFFSET 160.0 // mm
+#define DELTA_SMOOTH_ROD_OFFSET 159 // mm  ALEX_G (160)
 
 // Horizontal offset of the universal joints on the end effector.
-#define DELTA_EFFECTOR_OFFSET 36.0 // mm 36
+#define DELTA_EFFECTOR_OFFSET 36 // mm
 
 // Horizontal offset of the universal joints on the carriages.
-#define DELTA_CARRIAGE_OFFSET 33.0 // mm 25
+#define DELTA_CARRIAGE_OFFSET 33 // mm
 
 // Horizontal distance bridged by diagonal push rods when effector is centered.
 #define DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET+1)
 
 // Print surface diameter/2 minus unreachable space (avoid collisions with vertical towers).
-#define DELTA_PRINTABLE_RADIUS 90
+#define DELTA_PRINTABLE_RADIUS 90  // ALEX  (90)
 
 
 //===========================================================================
@@ -337,7 +338,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 //#define DISABLE_MAX_ENDSTOPS
 //#define DISABLE_MIN_ENDSTOPS // Deltas only use min endstops for probing
 
@@ -360,7 +361,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 #define INVERT_Y_DIR true
 #define INVERT_Z_DIR true
 #define INVERT_E0_DIR true
-#define INVERT_E1_DIR false // MK..
+#define INVERT_E1_DIR false
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
 
@@ -441,20 +442,20 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
   #ifdef AUTO_BED_LEVELING_GRID
 
-    #define DELTA_PROBABLE_RADIUS (DELTA_PRINTABLE_RADIUS - 20)
+    #define DELTA_PROBABLE_RADIUS (DELTA_PRINTABLE_RADIUS - 40)      // ALEX -40
 
     #define LEFT_PROBE_BED_POSITION -DELTA_PROBABLE_RADIUS
     #define RIGHT_PROBE_BED_POSITION DELTA_PROBABLE_RADIUS
     #define FRONT_PROBE_BED_POSITION -DELTA_PROBABLE_RADIUS
     #define BACK_PROBE_BED_POSITION DELTA_PROBABLE_RADIUS
 
-    #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
+    #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this      ALEX 10
 
     // Non-linear bed leveling will be used.
     // Compensate by interpolating between the nearest four Z probe values for each point.
     // Useful for deltas where the print surface may appear like a bowl or dome shape.
     // Works best with ACCURATE_BED_LEVELING_POINTS 5 or higher.
-    #define AUTO_BED_LEVELING_GRID_POINTS 4
+    #define AUTO_BED_LEVELING_GRID_POINTS 6
 
   #else  // !AUTO_BED_LEVELING_GRID
 
@@ -473,18 +474,18 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
   // X and Y offsets must be integers
   #define X_PROBE_OFFSET_FROM_EXTRUDER -19  // Probe on: -left  +right
   #define Y_PROBE_OFFSET_FROM_EXTRUDER -11  // Probe on: -front +behind
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -0.9  // -below (always!)
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -0.5  // -below (always!)  // ALEXG: -2.0
 
   #define Z_RAISE_BEFORE_HOMING 15      // (in mm) Raise Z before homing (G28) for Probe Clearance.
                                         // Be sure you have this distance over your Z_MAX_POS in case
 
   #define XY_TRAVEL_SPEED 4000         // X and Y axis travel speed between probes, in mm/min
 
-  #define Z_RAISE_BEFORE_PROBING 20   //How much the extruder will be raised before traveling to the first probing point.
+  #define Z_RAISE_BEFORE_PROBING 50   //How much the extruder will be raised before traveling to the first probing point.
   #define Z_RAISE_BETWEEN_PROBINGS 5  //How much the extruder will be raised when traveling from between next probing points
   #define Z_RAISE_AFTER_PROBING 50    //How much the extruder will be raised after the last probing point.
 
-   //#define Z_PROBE_END_SCRIPT "G1 Z10 F12000\nM114\n" //These commands will be executed in the end of G29 routine.
+//   #define Z_PROBE_END_SCRIPT "G1 Z10 F12000\nG1 X15 Y330\nG1 Z0.5\nG1 Z10" //These commands will be executed in the end of G29 routine.
                                                                             //Useful to retract a deployable probe.
 
   //#define Z_PROBE_SLED // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
@@ -558,7 +559,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 #ifdef MANUAL_HOME_POSITIONS
   #define MANUAL_X_HOME_POS 0
   #define MANUAL_Y_HOME_POS 0
-  #define MANUAL_Z_HOME_POS 200 // For delta: Distance between nozzle and print surface after homing.
+  #define MANUAL_Z_HOME_POS 203 // For delta: Distance between nozzle and print surface after homing. ALEXG (200)
 #endif
 
 /**
@@ -582,8 +583,8 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
 // For the other hotends it is their distance from the extruder 0 hotend.
- #define EXTRUDER_OFFSET_X  {0.0, 0.0} // (in mm) for each extruder, offset of the hotend on the X axis
- #define EXTRUDER_OFFSET_Y {+15.00, -15.00}  // (in mm) for each extruder, offset of the hotend on the Y axis
+// #define EXTRUDER_OFFSET_X {0.0, 20.00} // (in mm) for each extruder, offset of the hotend on the X axis
+// #define EXTRUDER_OFFSET_Y {0.0, 5.00}  // (in mm) for each extruder, offset of the hotend on the Y axis
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK                20.0    // (mm/sec)
@@ -621,12 +622,12 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
 // Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 190
-#define PLA_PREHEAT_HPB_TEMP 60
-#define PLA_PREHEAT_FAN_SPEED 80   // Insert Value between 0 and 255
+#define PLA_PREHEAT_HPB_TEMP 55
+#define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
 #define ABS_PREHEAT_HOTEND_TEMP 230
-#define ABS_PREHEAT_HPB_TEMP 100
-#define ABS_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
+#define ABS_PREHEAT_HPB_TEMP 70
+#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
 //==============================LCD and SD support=============================
 
